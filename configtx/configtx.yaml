@@ -1,0 +1,339 @@
+---
+################################################################################
+#
+#   ORGANIZATIONS
+#
+#   This section defines the organizational identities that can be referenced
+#   in the configuration profiles.
+#
+################################################################################
+
+Organizations:
+
+  - &OrdererOrg
+    Name: OrdererOrg
+    ID: OrdererMSP
+    MSPDir: ../organizations/ordererOrganizations/example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+
+      Writers:
+        Type: Signature
+        Rule: "OR('OrdererMSP.member')"
+
+      Admins:
+        Type: Signature
+        Rule: "OR('OrdererMSP.admin')"
+
+    OrdererEndpoints:
+      - orderer0.example.com:7050
+
+
+  - &BatteryOrg
+
+    Name: BatteryOrg
+    ID: BatteryMSP
+
+    MSPDir: ../organizations/peerOrganizations/battery.example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('BatteryMSP.admin', 'BatteryMSP.peer', 'BatteryMSP.client')"
+
+      Writers:
+        Type: Signature
+        Rule: "OR('BatteryMSP.admin', 'BatteryMSP.client')"
+
+      Admins:
+        Type: Signature
+        Rule: "OR('BatteryMSP.admin')"
+
+      Endorsement:
+        Type: Signature
+        Rule: "OR('BatteryMSP.peer')"
+
+
+  - &MotorOrg
+    Name: MotorOrg
+    ID: MotorMSP
+
+    MSPDir: ../organizations/peerOrganizations/motor.example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('MotorMSP.admin', 'MotorMSP.peer', 'MotorMSP.client')"
+
+      Writers:
+        Type: Signature
+        Rule: "OR('MotorMSP.admin', 'MotorMSP.client')"
+
+      Admins:
+        Type: Signature
+        Rule: "OR('MotorMSP.admin')"
+
+      Endorsement:
+        Type: Signature
+        Rule: "OR('MotorMSP.peer')"
+
+
+
+  - &ChassisOrg
+    Name: ChassisOrg
+    ID: ChassisMSP
+
+    MSPDir: ../organizations/peerOrganizations/chassis.example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('ChassisMSP.admin', 'ChassisMSP.peer', 'ChassisMSP.client')"
+
+      Writers:
+        Type: Signature
+        Rule: "OR('ChassisMSP.admin', 'ChassisMSP.client')"
+
+      Admins:
+        Type: Signature
+        Rule: "OR('ChassisMSP.admin')"
+
+      Endorsement:
+        Type: Signature
+        Rule: "OR('ChassisMSP.peer')"
+
+  - &VoltRideOrg
+    Name: VoltRideOrg
+    ID: VoltRideMSP
+
+    MSPDir: ../organizations/peerOrganizations/voltride.example.com/msp
+
+    Policies:
+      Readers:
+        Type: Signature
+        Rule: "OR('VoltRideMSP.admin', 'VoltRideMSP.peer', 'VoltRideMSP.client')"
+
+      Writers:
+        Type: Signature
+        Rule: "OR('VoltRideMSP.admin', 'VoltRideMSP.client')"
+
+      Admins:
+        Type: Signature
+        Rule: "OR('VoltRideMSP.admin')"
+
+      Endorsement:
+        Type: Signature
+        Rule: "OR('VoltRideMSP.peer')"
+
+
+
+
+Capabilities:
+  Channel: &ChannelCapabilities
+    V2_0: true
+
+  Orderer: &OrdererCapabilities
+    V2_0: true
+
+  Application: &ApplicationCapabilities
+    V2_5: true
+
+
+
+
+
+Application: &ApplicationDefaults
+
+  Organizations:
+
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+    LifecycleEndorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+
+    Endorsement:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Endorsement"
+
+  Capabilities:
+    <<: *ApplicationCapabilities
+
+
+
+
+
+Orderer: &OrdererDefaults
+
+  OrdererType: etcdraft
+
+  Addresses:
+    - orderer0.example.com:7050
+
+  EtcdRaft:
+    Consenters:
+      - Host: orderer0.example.com
+        Port: 7050
+        ClientTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer0.example.com/tls/server.crt
+        ServerTLSCert: ../organizations/ordererOrganizations/example.com/orderers/orderer0.example.com/tls/server.crt
+  BatchTimeout: 2s
+
+  BatchSize:
+    MaxMessageCount: 10
+    AbsoluteMaxBytes: 99 MB
+    PreferredMaxBytes: 512 KB
+
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+    BlockValidation:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+
+  Organizations:
+
+  Capabilities:
+    <<: *OrdererCapabilities
+
+
+
+
+
+Channel: &ChannelDefaults
+
+  Policies:
+    Readers:
+      Type: ImplicitMeta
+      Rule: "ANY Readers"
+
+    Writers:
+      Type: ImplicitMeta
+      Rule: "ANY Writers"
+
+    Admins:
+      Type: ImplicitMeta
+      Rule: "MAJORITY Admins"
+
+  Capabilities:
+    <<: *ChannelCapabilities
+
+
+
+
+
+
+
+
+Profiles:
+
+  VoltRideGenesis:
+    <<: *ChannelDefaults
+
+    Orderer:
+      <<: *OrdererDefaults
+
+      Organizations:
+        - *OrdererOrg
+
+    Consortiums:
+      VoltRideConsortium:
+        Organizations:
+          - *BatteryOrg
+          - *MotorOrg
+          - *ChassisOrg
+          - *VoltRideOrg
+
+
+
+  BatteryChannel:
+    <<: *ChannelDefaults
+
+    Consortium: VoltRideConsortium
+
+    Application:
+      <<: *ApplicationDefaults
+
+      Organizations:
+        - <<: *BatteryOrg
+          AnchorPeers:
+           - Host: peer0.battery.example.com
+             Port: 7051
+
+        - <<: *VoltRideOrg
+          AnchorPeers:
+            - Host: peerbattery.voltride.example.com
+              Port: 11051
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+
+  MotorChannel:
+    <<: *ChannelDefaults
+
+    Consortium: VoltRideConsortium
+
+    Application:
+      <<: *ApplicationDefaults
+
+      Organizations:
+        - <<: *MotorOrg
+          AnchorPeers:
+           - Host: peer0.motor.example.com
+             Port: 9051
+
+        - <<: *VoltRideOrg
+          AnchorPeers:
+            - Host: peermotor.voltride.example.com
+              Port: 12051
+
+      Capabilities:
+        <<: *ApplicationCapabilities
+
+
+  ChassisChannel:
+
+    <<: *ChannelDefaults
+
+
+    Consortium: VoltRideConsortium
+
+    Application:
+      <<: *ApplicationDefaults
+
+      Organizations:
+        - <<: *ChassisOrg
+          AnchorPeers:
+           - Host: peer0.chassis.example.com
+             Port: 10051
+        - <<: *VoltRideOrg
+          AnchorPeers:
+            - Host: peerchassis.voltride.example.com
+              Port: 13051
+      Capabilities:
+        <<: *ApplicationCapabilities

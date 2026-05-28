@@ -1,0 +1,17 @@
+# Ledger data — never commit, rebuilds on deploy
+ledger/
+
+# Go build cache
+chaincode/*/vendor/.cache
+chaincode/*/*.test
+
+# Node modules (later, for app layer)
+app/node_modules/
+app/*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Deploy output log
+deploy-output.txt

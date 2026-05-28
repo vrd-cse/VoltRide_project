@@ -1,0 +1,277 @@
+version: '3.7'
+
+networks:
+  voltride:
+
+services:
+
+  orderer0.example.com:
+    container_name: orderer0.example.com
+    hostname: orderer0.example.com
+    image: hyperledger/fabric-orderer:2.5
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+      - ORDERER_GENERAL_LISTENADDRESS=0.0.0.0
+      - ORDERER_GENERAL_LISTENPORT=7050
+      - ORDERER_GENERAL_LOCALMSPID=OrdererMSP
+      - ORDERER_GENERAL_LOCALMSPDIR=/var/hyperledger/orderer/msp
+      - ORDERER_GENERAL_TLS_ENABLED=true
+      - ORDERER_GENERAL_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_GENERAL_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_GENERAL_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_CHANNELPARTICIPATION_ENABLED=true
+      - ORDERER_ADMIN_TLS_ENABLED=true
+      - ORDERER_ADMIN_TLS_CERTIFICATE=/var/hyperledger/orderer/tls/server.crt
+      - ORDERER_ADMIN_TLS_PRIVATEKEY=/var/hyperledger/orderer/tls/server.key
+      - ORDERER_ADMIN_TLS_ROOTCAS=[/var/hyperledger/orderer/tls/ca.crt]
+      - ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:7053
+    working_dir: /root
+    command: orderer
+    ports:
+      - 7050:7050
+      - 7053:7053
+    volumes:
+      - ../organizations/ordererOrganizations/example.com/orderers/orderer0.example.com/msp:/var/hyperledger/orderer/msp
+      - ../organizations/ordererOrganizations/example.com/orderers/orderer0.example.com/tls:/var/hyperledger/orderer/tls
+      - ../configtx/system-genesis-block/genesis.block:/etc/hyperledger/fabric/genesisblock
+      - ../ledger/orderer0:/var/hyperledger/production
+    networks:
+      - voltride
+
+  peer0.battery.example.com:
+    container_name: peer0.battery.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.battery.example.com
+      - CORE_PEER_ADDRESS=peer0.battery.example.com:7051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:7051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.battery.example.com:7051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.battery.example.com:7051
+      - CORE_PEER_LOCALMSPID=BatteryMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_CHAINCODEADDRESS=peer0.battery.example.com:7052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:7052
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 7051:7051
+      - 7052:7052
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/battery.example.com/peers/peer0.battery.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/battery.example.com/peers/peer0.battery.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peer0.battery:/var/hyperledger/production
+    networks:
+      - voltride
+
+    extra_hosts:
+      - "peer0.battery.example.com:host-gateway"
+
+  peer0.motor.example.com:
+    container_name: peer0.motor.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.motor.example.com
+      - CORE_PEER_ADDRESS=peer0.motor.example.com:9051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:9051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.motor.example.com:9051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.motor.example.com:9051
+      - CORE_PEER_LOCALMSPID=MotorMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_CHAINCODEADDRESS=peer0.motor.example.com:9052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:9052
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 9051:9051
+      - 9052:9052
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/motor.example.com/peers/peer0.motor.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/motor.example.com/peers/peer0.motor.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peer0.motor:/var/hyperledger/production
+    networks:
+      - voltride
+    extra_hosts:
+      - "peer0.motor.example.com:host-gateway"
+
+
+  peer0.chassis.example.com:
+    container_name: peer0.chassis.example.com
+    image: hyperledger/fabric-peer:2.5
+    environment:
+      - CORE_PEER_ID=peer0.chassis.example.com
+      - CORE_PEER_ADDRESS=peer0.chassis.example.com:10051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:10051
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peer0.chassis.example.com:10051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer0.chassis.example.com:10051
+      - CORE_PEER_LOCALMSPID=ChassisMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+      - CORE_PEER_CHAINCODEADDRESS=peer0.chassis.example.com:10052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:10052
+    working_dir: /root
+    command: peer node start
+    ports:
+      - 10051:10051
+      - 10052:10052
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/chassis.example.com/peers/peer0.chassis.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/chassis.example.com/peers/peer0.chassis.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peer0.chassis:/var/hyperledger/production
+    networks:
+      - voltride
+    extra_hosts:
+      - "peer0.chassis.example.com:host-gateway"
+
+
+
+  peerbattery.voltride.example.com:
+    container_name: peerbattery.voltride.example.com
+    image: hyperledger/fabric-peer:2.5
+
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+
+      - CORE_PEER_ID=peerbattery.voltride.example.com
+      - CORE_PEER_ADDRESS=peerbattery.voltride.example.com:11051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:11051
+
+      - CORE_PEER_CHAINCODEADDRESS=peerbattery.voltride.example.com:11052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:11052
+
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peerbattery.voltride.example.com:11051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peerbattery.voltride.example.com:11051
+
+      - CORE_PEER_LOCALMSPID=VoltRideMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+
+    working_dir: /root
+
+    command: peer node start
+
+    ports:
+      - 11051:11051
+      - 11052:11052  
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peerbattery.voltride.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peerbattery.voltride.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peerbattery.voltride:/var/hyperledger/production
+    networks:
+      - voltride
+    extra_hosts:
+      - "peerbattery.voltride.example.com:host-gateway"
+
+
+  peermotor.voltride.example.com:
+    container_name: peermotor.voltride.example.com
+    image: hyperledger/fabric-peer:2.5
+
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+
+      - CORE_PEER_ID=peermotor.voltride.example.com
+      - CORE_PEER_ADDRESS=peermotor.voltride.example.com:12051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:12051
+
+      - CORE_PEER_CHAINCODEADDRESS=peermotor.voltride.example.com:12052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:12052
+
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peermotor.voltride.example.com:12051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peermotor.voltride.example.com:12051
+
+      - CORE_PEER_LOCALMSPID=VoltRideMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+
+    working_dir: /root
+
+    command: peer node start
+
+    ports:
+      - 12051:12051
+      - 12052:12052 
+
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peermotor.voltride.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peermotor.voltride.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peermotor.voltride:/var/hyperledger/production
+    networks:
+      - voltride
+    extra_hosts:
+      - "peermotor.voltride.example.com:host-gateway"
+
+
+  peerchassis.voltride.example.com:
+    container_name: peerchassis.voltride.example.com
+    image: hyperledger/fabric-peer:2.5
+
+    environment:
+      - FABRIC_LOGGING_SPEC=INFO
+
+      - CORE_PEER_ID=peerchassis.voltride.example.com
+      - CORE_PEER_ADDRESS=peerchassis.voltride.example.com:13051
+      - CORE_PEER_LISTENADDRESS=0.0.0.0:13051
+
+      - CORE_PEER_CHAINCODEADDRESS=peerchassis.voltride.example.com:13052
+      - CORE_PEER_CHAINCODELISTENADDRESS=0.0.0.0:13052
+
+      - CORE_PEER_GOSSIP_BOOTSTRAP=peerchassis.voltride.example.com:13051
+      - CORE_PEER_GOSSIP_EXTERNALENDPOINT=peerchassis.voltride.example.com:13051
+
+      - CORE_PEER_LOCALMSPID=VoltRideMSP
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp
+
+      - CORE_VM_ENDPOINT=unix:///host/var/run/docker.sock
+
+      - CORE_PEER_TLS_ENABLED=true
+      - CORE_PEER_TLS_CERT_FILE=/etc/hyperledger/fabric/tls/server.crt
+      - CORE_PEER_TLS_KEY_FILE=/etc/hyperledger/fabric/tls/server.key
+      - CORE_PEER_TLS_ROOTCERT_FILE=/etc/hyperledger/fabric/tls/ca.crt
+
+    working_dir: /root
+
+    command: peer node start
+
+    ports:
+      - 13051:13051
+      - 13052:13052
+    volumes:
+      - /var/run/docker.sock:/host/var/run/docker.sock
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peerchassis.voltride.example.com/msp:/etc/hyperledger/fabric/msp
+      - ../organizations/peerOrganizations/voltride.example.com/peers/peerchassis.voltride.example.com/tls:/etc/hyperledger/fabric/tls
+      - ../ledger/peerchassis.voltride:/var/hyperledger/production
+    networks:
+      - voltride
+    extra_hosts:
+      - "peerchassis.voltride.example.com:host-gateway"
